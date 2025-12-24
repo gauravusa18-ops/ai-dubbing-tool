@@ -462,44 +462,46 @@
             }
             document.getElementById('status').style.display = 'block';
             const statusText = document.getElementById('statusText');
-            statusText.innerHTML = `
-                 // Start timer
+            statusText.innerHTML = ``
+     <strong>Processing started...</strong><br><br>
+     🔍 Analyzing audio structure (Diarization)<br>
+     🏷️ Separating voice from background...<br>
+     🗣️ Translating to target language...<br>
+     🎲 Cloning and morphing voice...<br>
+     💾 Rendering final output...<br><br>
+     <em>Professional dubbing typically takes 2-5 minutes per minute of audio.</em><br>
+     <em>Deliverables: dub_voice_only.wav | mixed_keep_music.wav | metadata.json | QA_report.pdf</em>
+     `;
+
+     // Start timer when dubbing begins
      let startTime = Date.now();
-     let timerDisplay = document.getElementById('timerDisplay');
-     if (!timerDisplay) {
-       timerDisplay = document.createElement('div');
-       timerDisplay.id = 'timerDisplay';
-       timerDisplay.style.cssText = 'font-size: 1.5rem; font-weight: bold; color: #667eea; margin-top: 20px; text-align: center;';
-       document.getElementById('statusText').parentElement.appendChild(timerDisplay);
-     }
+     let timerDisplay = document.createElement('div');
+     timerDisplay.id = 'timerDisplay';
+     timerDisplay.style.cssText = 'font-size: 1.5rem; font-weight: bold; color: #667eea; margin-top: 20px; text-align: center;';
+     document.getElementById('statusText').parentElement.appendChild(timerDisplay);
+
      let timerInterval = setInterval(function() {
        let elapsed = Math.floor((Date.now() - startTime) / 1000);
        let minutes = Math.floor(elapsed / 60);
        let seconds = elapsed % 60;
-       timerDisplay.innerHTML = `⏱️ Time elapsed: ${minutes}m ${seconds}s`;
+       let secondsStr = seconds < 10 ? '0' + seconds : seconds;
+       timerDisplay.innerHTML = `⏱️ Time elapsed: ${minutes}m ${secondsStr}s`;
      }, 100);
-     // Store interval ID for later cleanup
+
+     // Store timer reference for later cleanup
      window.dubbingTimerInterval = timerInterval;
+
+     // Auto-stop timer after processing simulation (simulate 5 seconds)
+     setTimeout(function() {
+       if (window.dubbingTimerInterval) {
+         clearInterval(window.dubbingTimerInterval);
+       }
+       let finalDisplay = document.getElementById('timerDisplay');
+       if (finalDisplay) {
+         finalDisplay.innerHTML = `<span style="color: #4CAF50; font-size: 1.2rem;">✅ DUBBING COMPLETE!</span><br><span style="color: #667eea;">${finalDisplay.textContent}</span>`;
+       }
+     }, 5000);
      
-                <strong>Processing started...</strong><br><br>
-                🔍 Analyzing audio structure (Diarization)<br>
-                🏷️ Separating voice from background...<br>
-                🗣️ Translating to target language...<br>
-                🎲 Cloning and morphing voice...<br>
-                💾 Rendering final output...<br><br>
-                <em>Professional dubbing typically takes 2-5 minutes per minute of audio.</em><br>
-                <em>Deliverables: dub_voice_only.wav | mixed_keep_music.wav | metadata.json | QA_report.pdf</em>
-                     // Stop timer and show completion
-     if (window.dubbingTimerInterval) {
-       clearInterval(window.dubbingTimerInterval);
-     }
-     let timerDisplay = document.getElementById('timerDisplay');
-     if (timerDisplay) {
-       timerDisplay.innerHTML = `<span style="color: #4CAF50; font-size: 1.2rem;">✅ DUBBING COMPLETE!</span><br><span style="color: #667eea; font-size: 1rem;">${timerDisplay.textContent}</span>`;
-     }
-     
-            `;
-        }
     </script>
 </body>
 </html>
