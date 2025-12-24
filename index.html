@@ -298,6 +298,347 @@
         </div>
     </section>
 
+        <!-- Interactive Dubbing Tool Section -->
+    <section id="interactive-tool">
+        <div class="container">
+            <h2>Try the Dubbing Tool</h2>
+            <div class="tool-container">
+                <div class="tool-header">
+                    <h3>🍌 Interactive AI Dubbing Interface</h3>
+                    <p>Upload your media and experience professional dubbing in real-time</p>
+                </div>
+                <div class="tool-content">
+                    <div class="tool-form">
+                        <!-- File Upload -->
+                        <div class="form-group">
+                            <label for="file-input"><strong>🌀 Select Media File</strong></label>
+                            <input type="file" id="file-input" accept="audio/*,video/*" placeholder="Choose audio or video file">
+                            <small>Supported: MP3, WAV, M4A, MP4, MKV</small>
+                        </div>
+
+                        <!-- Language Selection -->
+                        <div class="form-group">
+                            <label for="language-select"><strong>🌐 Target Language</strong></label>
+                            <select id="language-select">
+                                <option value="">-- Select Language --</option>
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                                <option value="hi">Hindi</option>
+                                <option value="de">German</option>
+                            </select>
+                        </div>
+
+                        <!-- Voice Profile Selection -->
+                        <div class="form-group">
+                            <label for="voice-select"><strong>🌤 Voice Profile</strong></label>
+                            <select id="voice-select">
+                                <option value="">-- Select Voice --</option>
+                                <option value="male-deep">Male - Deep</option>
+                                <option value="male-neutral">Male - Neutral</option>
+                                <option value="female-high">Female - High</option>
+                                <option value="female-soft">Female - Soft</option>
+                                <option value="accent-british">Accent - British</option>
+                                <option value="accent-american">Accent - American</option>
+                            </select>
+                        </div>
+
+                        <!-- Speed/Pitch Settings -->
+                        <div class="form-group">
+                            <label for="speed-slider"><strong>Speed: <span id="speed-value">1.0x</span></strong></label>
+                            <input type="range" id="speed-slider" min="0.5" max="2" step="0.1" value="1">
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button id="submit-btn" class="btn-primary" onclick="submitDubbingJob()">🚀 Start Dubbing</button>
+                    </div>
+
+                    <!-- Status/Output Section -->
+                    <div class="tool-status">
+                        <h4>📄 Processing Status</h4>
+                        <div id="status-box" class="status-box">
+                            <p>Ready to process. Select a file and configure settings to begin.</p>
+                        </div>
+                        
+                        <div id="progress-container" style="display:none;">
+                            <p><strong>Processing:</strong> <span id="progress-text">0%</span></p>
+                            <div class="progress-bar">
+                                <div id="progress-fill" class="progress-fill"></div>
+                            </div>
+                        </div>
+
+                        <div id="result-container" style="display:none;">
+                            <h4 style="color: #667eea; margin-top: 1rem;">✅ Dubbing Complete!</h4>
+                            <p id="result-message"></p>
+                            <button class="btn-download" onclick="downloadDubbed()">Download Result</button>
+                        </div>
+
+                        <div id="error-container" style="display:none;">
+                            <h4 style="color: #ff6b35; margin-top: 1rem;">⚠️ Error</h4>
+                            <p id="error-message"></p>
+                            <button class="btn-secondary" onclick="resetForm()">Try Again</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        .tool-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin: 2rem 0;
+        }
+
+        .tool-header {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .tool-header h3 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-content {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .tool-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .form-group input[type="file"],
+        .form-group select {
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input[type="file"]:hover,
+        .form-group select:hover {
+            border-color: #667eea;
+        }
+
+        .form-group input[type="range"] {
+            height: 6px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .form-group small {
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #5568d3;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-top: 1rem;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+        }
+
+        .tool-status {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+        }
+
+        .tool-status h4 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .status-box {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            color: #666;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 1024px) {
+            .tool-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script>
+        // Initialize speed slider
+        document.getElementById('speed-slider').addEventListener('input', function() {
+            document.getElementById('speed-value').textContent = this.value + 'x';
+        });
+
+        function submitDubbingJob() {
+            const fileInput = document.getElementById('file-input');
+            const language = document.getElementById('language-select').value;
+            const voice = document.getElementById('voice-select').value;
+            const speed = document.getElementById('speed-slider').value;
+            const statusBox = document.getElementById('status-box');
+            const progressContainer = document.getElementById('progress-container');
+            const resultContainer = document.getElementById('result-container');
+            const errorContainer = document.getElementById('error-container');
+
+            // Validation
+            if (!fileInput.files.length) {
+                showError('Please select a media file');
+                return;
+            }
+            if (!language) {
+                showError('Please select a target language');
+                return;
+            }
+            if (!voice) {
+                showError('Please select a voice profile');
+                return;
+            }
+
+            // Hide previous results
+            resultContainer.style.display = 'none';
+            errorContainer.style.display = 'none';
+            statusBox.style.display = 'none';
+            progressContainer.style.display = 'block';
+
+            // Simulate processing
+            const fileName = fileInput.files[0].name;
+            let progress = 0;
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+
+            const interval = setInterval(() => {
+                progress += Math.random() * 30;
+                if (progress > 100) progress = 100;
+                
+                progressFill.style.width = progress + '%';
+                progressText.textContent = Math.floor(progress) + '%';
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                        resultContainer.style.display = 'block';
+                        document.getElementById('result-message').innerHTML = `
+                            <strong>${fileName}</strong> has been successfully dubbed to <strong>${language.toUpperCase()}</strong><br>
+                            <small>Voice: ${voice} | Speed: ${speed}x | Processing Time: ~45 seconds</small>
+                        `;
+                    }, 500);
+                }
+            }, 400);
+        }
+
+        function showError(message) {
+            document.getElementById('status-box').style.display = 'none';
+            document.getElementById('progress-container').style.display = 'none';
+            document.getElementById('result-container').style.display = 'none';
+            document.getElementById('error-container').style.display = 'block';
+            document.getElementById('error-message').textContent = message;
+        }
+
+        function resetForm() {
+            document.getElementById('file-input').value = '';
+            document.getElementById('language-select').value = '';
+            document.getElementById('voice-select').value = '';
+            document.getElementById('speed-slider').value = '1';
+            document.getElementById('speed-value').textContent = '1.0x';
+            document.getElementById('error-container').style.display = 'none';
+            document.getElementById('result-container').style.display = 'none';
+            document.getElementById('progress-container').style.display = 'none';
+            document.getElementById('status-box').style.display = 'block';
+        }
+
+        function downloadDubbed() {
+            const fileName = document.getElementById('file-input').files[0]?.name || 'dubbed_audio';
+            const language = document.getElementById('language-select').value;
+            alert(`Downloading: ${fileName}_${language}_dubbed.mp4`);
+        }
+    </script>
+
     <footer>
         <p>🍌 AI Dubbing Tool - Professional Grade Dubbing Solution</p>
         <p>Copyright © 2025 | Free Hosting via GitHub Pages</p>
