@@ -3,29 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Dubbing Tool</title>
+    <title>Professional AI Audio Dubbing Tool</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 20px;
         }
         .container {
+            max-width: 1200px;
+            margin: 0 auto;
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-            width: 100%;
-            padding: 0;
             overflow: hidden;
         }
         .header {
@@ -34,21 +26,30 @@
             padding: 40px 30px;
             text-align: center;
         }
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .header p { font-size: 1rem; opacity: 0.95; }
+        .tabs {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            background: #f5f5f5;
+            border-bottom: 2px solid #e0e0e0;
+            overflow-x: auto;
         }
-        .header p {
-            font-size: 1rem;
-            opacity: 0.95;
+        .tab-btn {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
         }
-        .content {
-            padding: 40px 30px;
-        }
+        .tab-btn:hover { background: #efefef; color: #333; }
+        .tab-btn.active { color: #667eea; border-bottom-color: #667eea; }
+        .content { padding: 30px; display: none; max-height: 800px; overflow-y: auto; }
+        .content.active { display: block; }
         .form-group {
             margin-bottom: 25px;
         }
@@ -60,7 +61,10 @@
             font-size: 1rem;
         }
         .form-group input[type="file"],
-        .form-group select {
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -69,15 +73,12 @@
             font-family: inherit;
             transition: border-color 0.3s;
         }
-        .form-group input[type="file"]:hover,
-        .form-group select:hover {
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
             border-color: #667eea;
-        }
-        .form-group input[type="range"] {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            cursor: pointer;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         .form-group small {
             display: block;
@@ -85,11 +86,11 @@
             font-size: 0.85rem;
             margin-top: 5px;
         }
-        .speed-display {
-            text-align: center;
-            color: #667eea;
-            font-weight: 600;
-            margin-bottom: 10px;
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
         .btn-submit {
             width: 100%;
@@ -102,111 +103,376 @@
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 10px;
+            margin-top: 20px;
         }
         .btn-submit:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
-        .status {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 25px;
-            border-left: 4px solid #667eea;
+        .btn-small {
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
         }
-        .status h4 {
-            color: #667eea;
-            margin-bottom: 10px;
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
         }
-        .status p {
-            color: #666;
-            line-height: 1.6;
+        .alert {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            background: #e3f2fd;
+            color: #1565c0;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🍌 AI Dubbing Tool</h1>
-            <p>Transform your content with professional voice synthesis</p>
+            <h1>🎬 Professional AI Audio Dubbing Tool</h1>
+            <p>Enterprise-grade voice dubbing with advanced prosody control, emotion mapping & source separation</p>
         </div>
-        
-        <div class="content">
-            <form onsubmit="handleSubmit(event)">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'basic')">📋 Basic</button>
+            <button class="tab-btn" onclick="openTab(event, 'voice')">🎤 Voice</button>
+            <button class="tab-btn" onclick="openTab(event, 'advanced')">⚙️ Advanced</button>
+            <button class="tab-btn" onclick="openTab(event, 'emotion')">😊 Emotion</button>
+            <button class="tab-btn" onclick="openTab(event, 'prosody')">🎵 Prosody</button>
+            <button class="tab-btn" onclick="openTab(event, 'output')">📁 Output</button>
+        </div>
+        <div id="basic" class="content active">
+            <h2 class="section-title">📋 Basic Settings</h2>
+            <div class="form-row">
                 <div class="form-group">
-                    <label for="file-input">🌀 Select Media File</label>
-                    <input type="file" id="file-input" accept="audio/*,video/*" required>
-                    <small>Supported: MP3, WAV, M4A, MP4, MKV</small>
+                    <label>📤 Select Media File</label>
+                    <input type="file" id="mediaFile" accept="audio/*,video/*" required>
+                    <small>WAV, MP3, M4A, MP4, MKV (supports up to 2GB)</small>
                 </div>
-
                 <div class="form-group">
-                    <label for="language-select">🌐 Target Language</label>
-                    <select id="language-select" required>
-                        <option value="">-- Select Language --</option>
+                    <label>🌍 Source Language</label>
+                    <select id="sourceLang">
+                        <option value="auto">Auto-Detect</option>
                         <option value="en">English</option>
                         <option value="es">Spanish</option>
                         <option value="fr">French</option>
-                        <option value="hi">Hindi</option>
                         <option value="de">German</option>
+                        <option value="it">Italian</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="ru">Russian</option>
+                        <option value="ja">Japanese</option>
+                        <option value="zh">Mandarin Chinese</option>
+                        <option value="ko">Korean</option>
+                        <option value="hi">Hindi</option>
+                        <option value="ar">Arabic</option>
                     </select>
+                    <small>Auto-detect uses speech recognition</small>
                 </div>
-
+            </div>
+            <div class="form-row">
                 <div class="form-group">
-                    <label for="voice-select">🌤 Voice Profile</label>
-                    <select id="voice-select" required>
-                        <option value="">-- Select Voice --</option>
-                        <option value="male-deep">Male - Deep</option>
-                        <option value="male-neutral">Male - Neutral</option>
-                        <option value="female-high">Female - High</option>
-                        <option value="female-soft">Female - Soft</option>
-                        <option value="accent-british">Accent - British</option>
-                        <option value="accent-american">Accent - American</option>
+                    <label>🎯 Target Language (with Dialect)</label>
+                    <input type="text" placeholder="e.g., Spanish (Mexican), English (US-West-Coast)" id="targetLang" required>
+                    <small>200+ language-dialect combinations supported</small>
+                </div>
+                <div class="form-group">
+                    <label>🎙️ Speaker Count</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="speakerCount" min="0" max="20" value="0" placeholder="0 = auto-detect">
+                        <button class="btn-small" onclick="autoDetectSpeakers()">Auto-Detect</button>
+                    </div>
+                    <small>0 = automatic diarization</small>
+                </div>
+            </div>
+        </div>
+        <div id="voice" class="content">
+            <h2 class="section-title">🎤 Voice & Clone Settings</h2>
+            <div class="alert">Upload ≥30 minutes of clean speaker audio or specify an existing voice_id for cloning</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>🎙️ Voice Clone (Upload or ID)</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="file" id="voiceClone" accept="audio/*">
+                        <span style="padding: 12px;">OR</span>
+                        <input type="text" placeholder="voice_id_xyz..." id="voiceId">
+                    </div>
+                    <small>Upload: ≥30 min speech; OR use existing voice_id</small>
+                </div>
+                <div class="form-group">
+                    <label>👤 Clone Preservation</label>
+                    <select id="clonePreservation">
+                        <option value="high">High (exact timbre, cadence)</option>
+                        <option value="medium">Medium (natural variation)</option>
+                        <option value="creative">Creative (artistic liberty)</option>
                     </select>
+                    <small>How closely to match original voice characteristics</small>
                 </div>
-
+            </div>
+            <div class="form-row">
                 <div class="form-group">
-                    <div class="speed-display">Speed: <span id="speed-value">1.0x</span></div>
-                    <input type="range" id="speed-slider" min="0.5" max="2" step="0.1" value="1" oninput="updateSpeed()">
+                    <label>⚖️ Emotion Baseline (Optional)</label>
+                    <select id="emotionBaseline">
+                        <option value="neutral">Neutral</option>
+                        <option value="warm">Warm</option>
+                        <option value="energetic">Energetic</option>
+                        <option value="serious">Serious</option>
+                        <option value="playful">Playful</option>
+                    </select>
+                    <small>Emotional foundation for the cloned voice</small>
                 </div>
-
-                <button type="submit" class="btn-submit">🚀 Start Dubbing</button>
-            </form>
-
-            <div class="status">
-                <h4>📄 Status</h4>
-                <p id="status-text">Ready to process. Select file, language, and voice to begin.</p>
+                <div class="form-group">
+                    <label>🏷️ Speaker Metadata (Optional)</label>
+                    <input type="text" placeholder="e.g., Female, Age 30-40, British accent" id="speakerMetadata">
+                    <small>Helps refine clone characteristics</small>
+                </div>
+            </div>
+        </div>
+        <div id="advanced" class="content">
+            <h2 class="section-title">⚙️ Advanced Settings</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>🔍 Background Handling</label>
+                    <select id="bgHandling">
+                        <option value="isolate">Isolate Voice (Demucs)</option>
+                        <option value="separate">Full Separation (Music/SFX/Voice)</option>
+                        <option value="preserve">Preserve All (-48 dFS floor)</option>
+                    </select>
+                    <small>Voice isolation and background preservation strategy</small>
+                </div>
+                <div class="form-group">
+                    <label>📑 Accent Variant</label>
+                    <select id="accentVariant">
+                        <option value="US-General">US - General</option>
+                        <option value="US-West-Coast">US - West Coast</option>
+                        <option value="US-Southern">US - Southern</option>
+                        <option value="UK-RP">UK - Received Pronunciation</option>
+                        <option value="UK-Scottish">UK - Scottish</option>
+                        <option value="AU-General">Australia - General</option>
+                        <option value="BR-Carioca">Brazil - Carioca</option>
+                        <option value="IN-Hindi-Urban">India - Hindi Urban</option>
+                        <option value="ES-Castilian">Spain - Castilian</option>
+                        <option value="ES-Mexican">Mexico - Standard</option>
+                    </select>
+                    <small>30+ accents available; preserves regional characteristics</small>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>📋 Pronunciation Lexicon (CSV Upload)</label>
+                <textarea id="lexicon" placeholder='Example:\nAIEEE,ˈaɪ i\nOpenAI,oʊ p ə n eɪ\nCEO,siː iː oʊ'></textarea>
+                <small>Format: WORD,IPA_PHONEME (leave empty to skip)</small>
+                <button class="btn-small" style="margin-top: 10px;" onclick="loadLexiconTemplate()">Load Example</button>
+            </div>
+        </div>
+        <div id="emotion" class="content">
+            <h2 class="section-title">😊 Emotion Map (Time-Stamped)</h2>
+            <div class="alert">Add emotional markers for different time segments to morph voice expression</div>
+            <div id="emotionTimeline" style="border: 2px solid #e0e0e0; padding: 15px; border-radius: 10px; background: #f9f9f9;">
+                <div style="display: grid; grid-template-columns: 100px 100px 150px auto; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    <input type="number" min="0" placeholder="Start (s)" class="emotion-start">
+                    <input type="number" min="0" placeholder="End (s)" class="emotion-end">
+                    <select class="emotion-type">
+                        <option value="neutral">Neutral</option>
+                        <option value="excited">Excited</option>
+                        <option value="sad">Sad</option>
+                        <option value="angry">Angry</option>
+                        <option value="whisper">Whisper</option>
+                        <option value="confident">Confident</option>
+                        <option value="uncertain">Uncertain</option>
+                    </select>
+                    <button class="btn-small" onclick="removeEmotion(this)">Remove</button>
+                </div>
+            </div>
+            <button class="btn-small" style="margin-top: 15px;" onclick="addEmotionRow()">+ Add Emotion Segment</button>
+        </div>
+        <div id="prosody" class="content">
+            <h2 class="section-title">🎵 Prosody Control</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>🌈 Pitch Range (semitones)</label>
+                    <input type="range" id="pitchRange" min="-2" max="2" step="0.1" value="0">
+                    <div style="text-align: center; color: #667eea; font-weight: 600;"><span id="pitchValue">0.0</span> st</div>
+                    <small>Range: ±2 semitones max (preserves natural voice)</small>
+                </div>
+                <div class="form-group">
+                    <label>⏱️ Speaking Rate</label>
+                    <input type="range" id="speakingRate" min="0.85" max="1.15" step="0.05" value="1.0">
+                    <div style="text-align: center; color: #667eea; font-weight: 600;"><span id="rateValue">1.0</span>x</div>
+                    <small>Range: 0.85x - 1.15x (maintains lip-sync)</small>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>🏷️ Jitter (Natural Variation)</label>
+                    <input type="range" id="jitter" min="0" max="1" step="0.1" value="0.5">
+                    <div style="text-align: center; color: #667eea; font-weight: 600;"><span id="jitterValue">50</span>%</div>
+                    <small>0 = robotic, 1.0 = natural variation</small>
+                </div>
+                <div class="form-group">
+                    <label>📝 Vibrato Depth</label>
+                    <input type="range" id="vibrato" min="0" max="1" step="0.1" value="0.3">
+                    <div style="text-align: center; color: #667eea; font-weight: 600;"><span id="vibratoValue">30</span>%</div>
+                    <small>Vocal oscillation intensity</small>
+                </div>
+            </div>
+        </div>
+        <div id="output" class="content">
+            <h2 class="section-title">📁 Output & Delivery Settings</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>💾 Audio Format</label>
+                    <select id="audioFormat">
+                        <option value="wav-mono">WAV 48kHz/24-bit Mono (Voice Only)</option>
+                        <option value="wav-stereo">WAV 48kHz/24-bit Stereo</option>
+                        <option value="wav-5.1">WAV 48kHz/24-bit 5.1 Surround (Voice on C)</option>
+                        <option value="aac">AAC 256kbps</option>
+                        <option value="mp3">MP3 320kbps</option>
+                    </select>
+                    <small>Professional audio specifications</small>
+                </div>
+                <div class="form-group">
+                    <label>🔊 Loudness Target (LUFS)</label>
+                    <select id="loudness">
+                        <option value="-16">-16 LUFS (Streaming Standard)</option>
+                        <option value="-14">-14 LUFS (Broadcast)</option>
+                        <option value="-13">-13 LUFS (YouTube/Podcast)</option>
+                        <option value="-12">-12 LUFS (Social Media)</option>
+                    </select>
+                    <small>−1 dBTP max, 6 LU dynamic range</small>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>🚫 Batch Mode (Folder Processing)</label>
+                    <input type="text" id="inputDir" placeholder="/path/to/input/folder">
+                    <small>Process all WAV/MP3/M4A files; mirrored output tree</small>
+                </div>
+                <div class="form-group">
+                    <label>📋 QA Gate (Round-Trip Translation)</label>
+                    <select id="qaGate">
+                        <option value="strict">Strict (BLEU ≥ 75)</option>
+                        <option value="standard">Standard (BLEU ≥ 60)</option>
+                        <option value="relaxed">Relaxed (BLEU ≥ 50)</option>
+                        <option value="skip">Skip QA Check</option>
+                    </select>
+                    <small>Auto-flags segments below threshold for review</small>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>🔐 Security & Compliance</label>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <label><input type="checkbox" checked> RAM-Only Processing</label>
+                        <label><input type="checkbox" checked> Auto-Wipe Temp Files</label>
+                        <label><input type="checkbox" checked> GDPR Compliant</label>
+                        <label><input type="checkbox" checked> SOC-2 Logging</label>
+                    </div>
+                    <small>Enterprise-grade security defaults</small>
+                </div>
+                <div class="form-group">
+                    <label>📄 Metadata & Reports</label>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <label><input type="checkbox" checked> JSON Metadata</label>
+                        <label><input type="checkbox" checked> Word Timestamps</label>
+                        <label><input type="checkbox" checked> Confidence Scores</label>
+                        <label><input type="checkbox" checked> QA Report PDF</label>
+                    </div>
+                    <small>Full transparency and audit trail</small>
+                </div>
+            </div>
+            <button class="btn-submit" onclick="processDubbing()">🚀 START PROFESSIONAL DUBBING</button>
+            <div id="status" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 25px; border-left: 4px solid #667eea; display: none;">
+                <h4 style="color: #667eea; margin-bottom: 10px;">📄 Processing Status</h4>
+                <p id="statusText" style="color: #666; line-height: 1.6;">Ready to process...</p>
             </div>
         </div>
     </div>
 
     <script>
-        function updateSpeed() {
-            const slider = document.getElementById('speed-slider');
-            document.getElementById('speed-value').textContent = slider.value + 'x';
+        function openTab(evt, tabName) {
+            var i, tabcontent, tabbuttons;
+            tabcontent = document.getElementsByClassName("content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            tabbuttons = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tabbuttons.length; i++) {
+                tabbuttons[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
         }
-
-        function handleSubmit(event) {
-            event.preventDefault();
-            const file = document.getElementById('file-input').files[0];
-            const language = document.getElementById('language-select').value;
-            const voice = document.getElementById('voice-select').value;
-            const speed = document.getElementById('speed-slider').value;
-            const statusText = document.getElementById('status-text');
-
-            if (!file || !language || !voice) {
-                statusText.innerHTML = '<span style="color: #ff6b35;">Please select all options</span>';
+        function autoDetectSpeakers() {
+            alert('Auto-detection would analyze audio diarization.\nPlease select an audio file first.');
+        }
+        function addEmotionRow() {
+            const timeline = document.getElementById('emotionTimeline');
+            const newRow = document.createElement('div');
+            newRow.style.display = 'grid';
+            newRow.style.gridTemplateColumns = '100px 100px 150px auto';
+            newRow.style.gap = '10px';
+            newRow.style.alignItems = 'center';
+            newRow.style.marginBottom = '10px';
+            newRow.innerHTML = `
+                <input type="number" min="0" placeholder="Start (s)" class="emotion-start">
+                <input type="number" min="0" placeholder="End (s)" class="emotion-end">
+                <select class="emotion-type">
+                    <option value="neutral">Neutral</option>
+                    <option value="excited">Excited</option>
+                    <option value="sad">Sad</option>
+                    <option value="angry">Angry</option>
+                    <option value="whisper">Whisper</option>
+                    <option value="confident">Confident</option>
+                    <option value="uncertain">Uncertain</option>
+                </select>
+                <button class="btn-small" onclick="removeEmotion(this)">Remove</button>
+            `;
+            timeline.appendChild(newRow);
+        }
+        function removeEmotion(btn) {
+            btn.parentElement.remove();
+        }
+        function loadLexiconTemplate() {
+            document.getElementById('lexicon').value = 'AIEE,ˈaɪ iː\nOpenAI,oʊ p ə n eɪ\nCEO,siː iː oʊ';
+        }
+        document.getElementById('pitchRange').oninput = function() {
+            document.getElementById('pitchValue').textContent = parseFloat(this.value).toFixed(1);
+        };
+        document.getElementById('speakingRate').oninput = function() {
+            document.getElementById('rateValue').textContent = parseFloat(this.value).toFixed(2);
+        };
+        document.getElementById('jitter').oninput = function() {
+            document.getElementById('jitterValue').textContent = Math.round(this.value * 100);
+        };
+        document.getElementById('vibrato').oninput = function() {
+            document.getElementById('vibratoValue').textContent = Math.round(this.value * 100);
+        };
+        function processDubbing() {
+            const mediaFile = document.getElementById('mediaFile').value;
+            if (!mediaFile) {
+                alert('🚨 Please select a media file first');
                 return;
             }
-
-            statusText.innerHTML = `<span style="color: #667eea;">Processing: <strong>${file.name}</strong> to ${language.toUpperCase()} (${voice}) at ${speed}x speed...</span>`;
-            
-            setTimeout(() => {
-                statusText.innerHTML = `<span style="color: #28a745;"><strong>✅ Complete!</strong></span><br/>Your dubbed file is ready for download.`;
-            }, 3000);
+            document.getElementById('status').style.display = 'block';
+            const statusText = document.getElementById('statusText');
+            statusText.innerHTML = `
+                <strong>Processing started...</strong><br><br>
+                🔍 Analyzing audio structure (Diarization)<br>
+                🏷️ Separating voice from background...<br>
+                🗣️ Translating to target language...<br>
+                🎲 Cloning and morphing voice...<br>
+                💾 Rendering final output...<br><br>
+                <em>Professional dubbing typically takes 2-5 minutes per minute of audio.</em><br>
+                <em>Deliverables: dub_voice_only.wav | mixed_keep_music.wav | metadata.json | QA_report.pdf</em>
+            `;
         }
     </script>
-    <!-- Cache refresh: v2 -->
-    
 </body>
 </html>
